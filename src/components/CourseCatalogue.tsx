@@ -6,9 +6,10 @@ import CourseCard from './CourseCard';
 
 interface CourseCatalogueProps {
   onSelectCourse: (course: Course) => void;
+  courses: Course[];
 }
 
-export default function CourseCatalogue({ onSelectCourse }: CourseCatalogueProps) {
+export default function CourseCatalogue({ onSelectCourse, courses }: CourseCatalogueProps) {
   const [selectedCategory, setSelectedCategory] = useState<CourseCategory | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFormat, setSelectedFormat] = useState<'All' | 'Cohort' | 'Self-Paced'>('All');
@@ -23,7 +24,10 @@ export default function CourseCatalogue({ onSelectCourse }: CourseCatalogueProps
   ];
 
   // Filtering Logic
-  const filteredCourses = COURSES.filter(course => {
+  const filteredCourses = courses.filter(course => {
+    // Only show published courses in catalogue
+    if (course.isPublished === false) return false;
+
     // 1. Matches Category filter
     const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory;
     

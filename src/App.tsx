@@ -19,6 +19,15 @@ import InstructorsPage from './components/InstructorsPage';
 import AuthModal from './components/AuthModal';
 import CourseCard from './components/CourseCard';
 
+import StudentDashboard from './components/StudentDashboard';
+import MyCourses from './components/MyCourses';
+import CoursePlayer from './components/CoursePlayer';
+import QuizInterface from './components/QuizInterface';
+import CertificatesPage from './components/CertificatesPage';
+import ProfilePage from './components/ProfilePage';
+import AdminPortal from './components/AdminPortal';
+import { getOrCreateLessonQuiz } from './quiz_data';
+
 import { Course } from './types';
 import { COURSES, INSTRUCTORS } from './data';
 
@@ -27,11 +36,30 @@ interface UserProfile {
   email: string;
   company?: string;
   profession?: string;
+  role?: 'student' | 'admin';
 }
 
 export default function App() {
   const [currentTab, setTab] = useState<string>('home');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  
+  // Dynamic courses list state
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    const savedCourses = localStorage.getItem('sf_courses');
+    if (savedCourses) {
+      try {
+        setCourses(JSON.parse(savedCourses));
+      } catch (e) {
+        setCourses(COURSES);
+      }
+    } else {
+      const initialized = COURSES.map(c => ({ ...c, isPublished: true }));
+      localStorage.setItem('sf_courses', JSON.stringify(initialized));
+      setCourses(initialized);
+    }
+  }, []);
   
   // Auth state
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -51,14 +79,21 @@ export default function App() {
   const [corpSize, setCorpSize] = useState('10-50');
   const [corpMessage, setCorpMessage] = useState('');
 
+  // Active lesson/quiz player states
+  const [activePlayerCourse, setActivePlayerCourse] = useState<Course | null>(null);
+  const [activeLessonId, setActiveLessonId] = useState<string | undefined>(undefined);
+  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
+
   // Load user session on load
   useEffect(() => {
     const savedUser = localStorage.getItem('sf_current_user');
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
-        setCurrentUser(parsed);
-        loadEnrolledCourses(parsed.email);
+        // Preserve saved role, default to 'student' ONLY if role is undefined
+        const enriched = { role: (parsed.role || 'student') as 'student' | 'admin', ...parsed };
+        setCurrentUser(enriched);
+        loadEnrolledCourses(enriched.email);
       } catch (e) {
         localStorage.removeItem('sf_current_user');
       }
@@ -71,8 +106,24 @@ export default function App() {
   };
 
   const handleLoginSuccess = (user: UserProfile) => {
-    setCurrentUser(user);
-    loadEnrolledCourses(user.email);
+    // Check if user has an explicitly saved role in our sf_users folder
+    const allUsers = JSON.parse(localStorage.getItem('sf_users') || '[]');
+    const matched = allUsers.find((u: any) => u.email.toLowerCase() === user.email.toLowerCase());
+    
+    const enriched = { 
+      role: (matched?.role || user.role || 'student') as 'student' | 'admin', 
+      ...user 
+    };
+    // Sync local current user session
+    localStorage.setItem('sf_current_user', JSON.stringify(enriched));
+    setCurrentUser(enriched);
+    loadEnrolledCourses(enriched.email);
+    
+    if (enriched.role === 'admin') {
+      setTab('admin'); // admins go directly to the back office logs upon logging in
+    } else {
+      setTab('dashboard'); // normal student dashboards
+    }
   };
 
   const handleLogout = () => {
@@ -80,6 +131,44 @@ export default function App() {
     setCurrentUser(null);
     setEnrolledCourseSlugs([]);
     setTab('home');
+    setActivePlayerCourse(null);
+    setActiveLessonId(undefined);
+    setActiveQuizId(null);
+  };
+
+  // Redirect authorization guards for Phase 2 and Admin (Phase 4)
+  useEffect(() => {
+    const studentTabs = ['dashboard', 'my-courses', 'learn-player', 'learn-quiz', 'certificates', 'profile'];
+    if (studentTabs.includes(currentTab)) {
+      if (!currentUser) {
+        setTab('courses');
+        setAuthModalTab('login');
+        setAuthModalOpen(true);
+      } else if (currentUser.role !== 'student' && currentUser.role !== 'admin') {
+        setTab('courses');
+        alert("Access Denied: Your profile role index does not permit student portal access. Please update your account to 'student' or 'admin' in Settings.");
+      }
+    }
+
+    if (currentTab === 'admin') {
+      if (!currentUser) {
+        setTab('dashboard');
+        alert("Access Denied: You must be logged in as an administrator to view this area.");
+        setAuthModalTab('login');
+        setAuthModalOpen(true);
+      } else if (currentUser.role !== 'admin') {
+        setTab('dashboard');
+        alert("Access Denied: Only profiles where role = 'admin' can access /admin routes.");
+      }
+    }
+  }, [currentTab, currentUser]);
+
+  const handleContinuePlayer = (course: Course, lessonId: string) => {
+    setActivePlayerCourse(course);
+    setActiveLessonId(lessonId);
+    setActiveQuizId(null);
+    setTab('learn-player');
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const handleSelectCourse = (course: Course) => {
@@ -120,6 +209,27 @@ export default function App() {
       }
       
       setEnrolledCourseSlugs(currentEnrolls);
+
+      // Create and log transaction for AdminPortal ledger
+      try {
+        const paymentsList = JSON.parse(localStorage.getItem('sf_all_payments') || '[]');
+        const newPayment = {
+          id: 'T' + Math.floor(85300 + Math.random() * 5000),
+          studentName: currentUser.name || currentUser.email,
+          studentEmail: currentUser.email,
+          courseTitle: checkoutCourse.title,
+          courseSlug: checkoutCourse.slug,
+          amount: checkoutCourse.price,
+          date: new Date().toISOString(),
+          status: 'Successful',
+          paymentMethod: 'Paystack',
+          reference: 'ref_ps_' + Math.random().toString(36).substring(2, 10).toUpperCase()
+        };
+        paymentsList.unshift(newPayment);
+        localStorage.setItem('sf_all_payments', JSON.stringify(paymentsList));
+      } catch (e) {
+        console.error("Error logging payment ledger:", e);
+      }
 
       setTimeout(() => {
         setCheckoutSuccess(false);
@@ -182,9 +292,7 @@ export default function App() {
               Verify Class Dashboard →
             </button>
           </div>
-        )}
-
-        {/* 1. HOMEPAGE */}
+        )}        {/* 1. HOMEPAGE */}
         {currentTab === 'home' && (
           <div id="homepage-container" className="animate-fade-in">
             {/* Hero Section */}
@@ -295,11 +403,97 @@ export default function App() {
           </div>
         )}
 
+        {/* ========================================= */}
+        {/*           PHASE 2 ROUTING CHANNELS         */}
+        {/* ========================================= */}
+
+        {/* STUDENT DASHBOARD */}
+        {currentTab === 'dashboard' && currentUser && (
+          <div className="animate-fade-in" id="student-dashboard">
+            <StudentDashboard
+              currentUser={currentUser}
+              setTab={setTab}
+              onSelectCourse={handleSelectCourse}
+              onContinueCourse={handleContinuePlayer}
+            />
+          </div>
+        )}
+
+        {/* MY COURSES */}
+        {currentTab === 'my-courses' && currentUser && (
+          <div className="animate-fade-in" id="student-courses">
+            <MyCourses
+              currentUser={currentUser}
+              setTab={setTab}
+              onSelectCourse={handleSelectCourse}
+              onContinueCourse={handleContinuePlayer}
+            />
+          </div>
+        )}
+
+        {/* COURSE PLAYER */}
+        {currentTab === 'learn-player' && currentUser && activePlayerCourse && (
+          <div className="animate-fade-in" id="student-player">
+            <CoursePlayer
+              course={activePlayerCourse}
+              initialLessonId={activeLessonId}
+              currentUser={currentUser}
+              onBack={() => {
+                setTab('dashboard');
+                window.scrollTo({ top: 0 });
+              }}
+              setTab={setTab}
+              onTakeQuiz={(quizId) => {
+                setActiveQuizId(quizId);
+                setTab('learn-quiz');
+                window.scrollTo({ top: 0 });
+              }}
+            />
+          </div>
+        )}
+
+        {/* QUIZ INTERFACE */}
+        {currentTab === 'learn-quiz' && currentUser && activePlayerCourse && activeQuizId && (
+          <div className="animate-fade-in" id="student-quiz">
+            <QuizInterface
+              quiz={getOrCreateLessonQuiz(activePlayerCourse.slug, activeLessonId || '', 'Practice')}
+              currentUser={currentUser}
+              onBackToPlayer={() => {
+                setTab('learn-player');
+                window.scrollTo({ top: 0 });
+              }}
+            />
+          </div>
+        )}
+
+        {/* CERTIFICATES */}
+        {currentTab === 'certificates' && currentUser && (
+          <div className="animate-fade-in" id="student-certificates">
+            <CertificatesPage
+              currentUser={currentUser}
+              setTab={setTab}
+            />
+          </div>
+        )}
+
+        {/* PROFILE SETTINGS */}
+        {currentTab === 'profile' && currentUser && (
+          <div className="animate-fade-in" id="student-profile">
+            <ProfilePage
+              currentUser={currentUser}
+              onUpdateUser={(updated) => setCurrentUser(updated)}
+              onLogout={handleLogout}
+              setTab={setTab}
+            />
+          </div>
+        )}
+
         {/* 2. COURSE CATALOGUE */}
         {currentTab === 'courses' && (
           <div className="animate-fade-in" id="catalogue-view">
             <CourseCatalogue 
               onSelectCourse={handleSelectCourse}
+              courses={courses}
             />
           </div>
         )}
@@ -503,6 +697,18 @@ export default function App() {
 
             </div>
           </section>
+        )}
+
+        {/* 7. ADMIN PORTAL (PHASE 4) */}
+        {currentTab === 'admin' && currentUser && currentUser.role === 'admin' && (
+          <div className="animate-fade-in" id="admin-view">
+            <AdminPortal 
+              currentUser={currentUser}
+              courses={courses}
+              setCourses={setCourses}
+              setTab={setTab}
+            />
+          </div>
         )}
 
       </div>

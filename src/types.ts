@@ -54,6 +54,7 @@ export interface Course {
   learningOutcomes: string[];
   targetAudience: string[];
   instructorId: string;
+  isPublished?: boolean;
 }
 
 export interface Instructor {

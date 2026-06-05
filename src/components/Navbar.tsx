@@ -57,49 +57,112 @@ export default function Navbar({ currentTab, setTab, currentUser, onLogout, onOp
 
       {/* Desktop Navigation Links */}
       <div className="hidden md:flex items-center gap-8 font-sans text-sm font-medium text-gray-600">
-        <button
-          id="nav-link-home"
-          onClick={() => handleNavClick('home')}
-          className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
-            currentTab === 'home' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
-          }`}
-        >
-          Home
-        </button>
-        <button
-          id="nav-link-courses"
-          onClick={() => handleNavClick('courses')}
-          className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
-            currentTab === 'courses' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
-          }`}
-        >
-          Courses
-        </button>
-        <button
-          id="nav-link-about"
-          onClick={() => handleNavClick('about')}
-          className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
-            currentTab === 'about' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
-          }`}
-        >
-          About
-        </button>
-        <button
-          id="nav-link-instructors"
-          onClick={() => handleNavClick('instructors')}
-          className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
-            currentTab === 'instructors' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
-          }`}
-        >
-          Instructors
-        </button>
-        <button
-          id="nav-link-corporate"
-          onClick={() => handleNavClick('corporate')}
-          className="cursor-pointer hover:text-amber-500 transition-colors py-2"
-        >
-          Corporate
-        </button>
+        {currentUser ? (
+          <>
+            <button
+              id="nav-link-dashboard"
+              onClick={() => handleNavClick('dashboard')}
+              className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
+                currentTab === 'dashboard' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
+              }`}
+            >
+              Dashboard
+            </button>
+            {currentUser.role === 'admin' && (
+              <button
+                id="nav-link-admin"
+                onClick={() => handleNavClick('admin')}
+                className={`cursor-pointer hover:text-amber-550 transition-colors py-2 font-bold text-amber-600 flex items-center gap-1 ${
+                  currentTab === 'admin' ? 'text-[#D97706] font-black border-b-2 border-amber-500' : ''
+                }`}
+              >
+                Admin Area
+              </button>
+            )}
+            <button
+              id="nav-link-my-courses"
+              onClick={() => handleNavClick('my-courses')}
+              className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
+                currentTab === 'my-courses' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
+              }`}
+            >
+              My Courses
+            </button>
+            <button
+              id="nav-link-certificates"
+              onClick={() => handleNavClick('certificates')}
+              className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
+                currentTab === 'certificates' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
+              }`}
+            >
+              Certificates
+            </button>
+            <button
+              id="nav-link-profile"
+              onClick={() => handleNavClick('profile')}
+              className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
+                currentTab === 'profile' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
+              }`}
+            >
+              Profile
+            </button>
+            <button
+              id="nav-link-courses"
+              onClick={() => handleNavClick('courses')}
+              className={`cursor-pointer hover:text-amber-400 transition-colors py-2 ${
+                currentTab === 'courses' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
+              }`}
+            >
+              Catalogue
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              id="nav-link-home"
+              onClick={() => handleNavClick('home')}
+              className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
+                currentTab === 'home' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
+              }`}
+            >
+              Home
+            </button>
+            <button
+              id="nav-link-courses"
+              onClick={() => handleNavClick('courses')}
+              className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
+                currentTab === 'courses' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
+              }`}
+            >
+              Courses
+            </button>
+            <button
+              id="nav-link-about"
+              onClick={() => handleNavClick('about')}
+              className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
+                currentTab === 'about' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
+              }`}
+            >
+              About
+            </button>
+            <button
+              id="nav-link-instructors"
+              onClick={() => handleNavClick('instructors')}
+              className={`cursor-pointer hover:text-amber-500 transition-colors py-2 ${
+                currentTab === 'instructors' ? 'text-navy-950 font-semibold border-b-2 border-amber-500' : ''
+              }`}
+            >
+              Instructors
+            </button>
+            <button
+              id="nav-link-corporate"
+              onClick={() => handleNavClick('corporate')}
+              className="cursor-pointer hover:text-amber-500 transition-colors py-2"
+            >
+              Corporate
+            </button>
+          </>
+        )}
       </div>
 
       {/* Auth trigger elements */}
@@ -163,46 +226,103 @@ export default function Navbar({ currentTab, setTab, currentUser, onLogout, onOp
           className="fixed inset-x-0 top-[72px] bottom-0 z-50 bg-white border-t border-gray-100 flex flex-col justify-between py-6 px-4 animate-fade-in"
         >
           <div className="flex flex-col gap-1">
-            <button
-              id="mobile-nav-home"
-              onClick={() => handleNavClick('home')}
-              className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
-            >
-              <span>Home</span>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </button>
-            <button
-              id="mobile-nav-courses"
-              onClick={() => handleNavClick('courses')}
-              className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
-            >
-              <span>Courses</span>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </button>
-            <button
-              id="mobile-nav-about"
-              onClick={() => handleNavClick('about')}
-              className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
-            >
-              <span>About Academy</span>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </button>
-            <button
-              id="mobile-nav-instructors"
-              onClick={() => handleNavClick('instructors')}
-              className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
-            >
-              <span>Instructors</span>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </button>
-            <button
-              id="mobile-nav-corporate"
-              onClick={() => handleNavClick('corporate')}
-              className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
-            >
-              <span>Corporate Training</span>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </button>
+            {currentUser ? (
+              <>
+                <button
+                  id="mobile-nav-dashboard"
+                  onClick={() => handleNavClick('dashboard')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>Dashboard</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+                {currentUser.role === 'admin' && (
+                  <button
+                    id="mobile-nav-admin"
+                    onClick={() => handleNavClick('admin')}
+                    className="h-[56px] w-full text-left font-sans text-lg font-black text-amber-600 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-amber-500/5 transition-colors"
+                  >
+                    <span>★ Admin Area</span>
+                    <ChevronRight className="w-5 h-5 text-amber-650" />
+                  </button>
+                )}
+                <button
+                  id="mobile-nav-my-courses"
+                  onClick={() => handleNavClick('my-courses')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>My Courses</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+                <button
+                  id="mobile-nav-certificates"
+                  onClick={() => handleNavClick('certificates')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>Certificates</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+                <button
+                  id="mobile-nav-profile"
+                  onClick={() => handleNavClick('profile')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>Profile Settings</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+                <button
+                  id="mobile-nav-courses"
+                  onClick={() => handleNavClick('courses')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>Course Catalogue</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  id="mobile-nav-home"
+                  onClick={() => handleNavClick('home')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>Home</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+                <button
+                  id="mobile-nav-courses"
+                  onClick={() => handleNavClick('courses')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>Courses</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+                <button
+                  id="mobile-nav-about"
+                  onClick={() => handleNavClick('about')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>About Academy</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+                <button
+                  id="mobile-nav-instructors"
+                  onClick={() => handleNavClick('instructors')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>Instructors</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+                <button
+                  id="mobile-nav-corporate"
+                  onClick={() => handleNavClick('corporate')}
+                  className="h-[56px] w-full text-left font-sans text-lg font-bold text-navy-950 flex items-center justify-between border-b border-gray-50 px-2 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <span>Corporate Training</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </button>
+              </>
+            )}
           </div>
 
           <div className="flex flex-col gap-3 pt-6 border-t border-gray-100">
