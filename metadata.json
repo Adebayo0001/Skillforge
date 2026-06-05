@@ -1,0 +1,6 @@
+{
+  "name": "SkillForge Academy",
+  "description": "Professional cohort and self-paced skill-building platform for Nigerian professionals to earn more and do more.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
